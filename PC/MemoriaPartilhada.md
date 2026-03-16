@@ -37,7 +37,7 @@ Outro Exemplo:
         }
     }
 
-Inicialmente temos que definimos a variavél output e portanto temos que numa primeira fase, output está armazenda em Stack, e faz referencia a client.getOutputStream().bufferedWriter() que por sua vez está armazenada em Heap.
+Inicialmente  definimos a variavél output e portanto temos que numa primeira fase, output está armazenda em Stack, e faz referencia a client.getOutputStream().bufferedWriter() que por sua vez está armazenada em Heap.
 
 Ao fazermos a chamada à variavél output dentro dos lambdas, chamado de closure, a variavél deixa de estar armazenada em Stack e passa a estar armazenda em Heap passando então a partilhar memória entre todas as threads
 
