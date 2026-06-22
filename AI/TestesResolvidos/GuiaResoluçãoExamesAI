@@ -1,0 +1,458 @@
+Guia passo a passo sobre como resolver os exames de AI, incluindo matéria e conceitos relevantes.
+
+O exame costuma estar dividido em 3 partes, sendo a primeira direcionada para desenvolver operadores, modelar problemas e saber aplicar algoritmos como o DFS com iteerative deeping,BFS e A*
+
+A segunda parte está consiste no Planning, no caso means~ends e POP(Partial Order Planning), aqui é importante saber os operadores can(), effects, add, delete e saber vantagens e desvantagens do uso do means ends sem goal regression.
+
+A terceira Parte está virada para algoritmos genéticos(GA) e aplicação de conceitos.
+
+
+
+
+Primeira Parte:
+
+Exercicio 1.a)
+
+A primeira questão costuma incidir diretamente sobre modelar um determinado jogo, especificando predicados essenciais, factos importantes e por fim definir estados iniciais e finais.
+
+Assumindo que temos por exemplo o jogo do Sokoban ou do pacman a resposta para esta pergunta deve abordar os seguintes pontos:
+
+
+Conceitos a ser abordados:
+
+- explicar quais os factos a serem modulados e como é que os representamos (x,y)
+- explicar as possiveis direções/movimentações a serem efetuadas
+- explicar que valores/factos imutavéis devem ser abordados por outros predicados.
+- explicar predicados principais
+- definir estado inicial e final
+
+Exemplo:
+
+"Para a representação de um estado no espaço de estados, vamos precisar de uma localização/coordenada (x,y) para representar o sokoban/pacman, e uma localização (x,y) para cada caixa/pellet. 
+
+Obviamente temos de ter em conta as paredes, contudo, uma vez que estas são imutavéis devem ser consideradas por outro predicado.
+
+Temos ainda que a movimentação do sokoban/pacman pode ser feita nas direções N,S,O,E.
+
+E portanto os dois predicados mais importantes a ter em conta são:
+move(sok,Dir) / move(pac/Dir), sendo Dir uma das posições direções
+pushBox(sok,box,Dir) / eat(pac,pellet,Dir).
+
+Dito isto e para representação dos estados iniciais e finais temos somente de ter em conta:
+
+Initial = ["localização do sok/pac", "localização da caixa/pellet"]
+
+Final = ["A posição final do sok e do pacman não é relevante portanto não usamos" ,"no sokoban, o estado final dee ser a caixa na posição pretendida"]
+
+ "
+
+
+
+
+
+Exercicio 1.b)
+
+Neste exercicio é nos pedido para desenvolver todos os operadores necessários para implementarmos a solução.
+
+Para resolver este exercicio temos de definir alguns predicados e factos essenciais:
+
+Predicado Principal, sucessor:
+
+s(State,NewState):-
+    direction(Dir),
+    apply_move(State,Dir,NewState)
+
+Tempos de definir as direções:
+
+direction(n)
+direction(s)
+direction(o)
+direction(e)
+
+Calculo de Coordenadas:
+
+coords(X,Y,Dir,X1,Y1).
+
+coords(X,Y,n,X1,Y1):-
+    Y1 is Y - 1.
+
+coords(X,Y,s,X1,Y1):-
+    Y1 is Y + 1.
+
+
+coords(X,Y,o,X1,Y1):-
+    X1 is X - 1.
+
+coords(X,Y,e,X1,Y1):-
+    X1 is X + 1.
+
+
+Definir factos essenciais como walls:
+
+wall(X,Y):-
+    walls(Walls),
+    member(wall(X,Y),Walls).
+
+
+Temos ainda dois predicados auxiliares essenciais como o add e delete para conseguirmos adicionar e remover factos do nosso estado
+
+Remover um elemento:
+
+delete(X, [X|R], R). 
+
+delete(X,[H|L], [H|R]):-
+    delete(X, L , R).
+
+Adicionar um elemento à cabeça:
+
+add(X, L1, [X|L1]).     
+
+
+
+A partir daqui temos definir e criar todos os predicados necessários para conseguirmos implementar a solução.
+
+\+ -> é o operador de negação
+
+E o predicado para verificar se atingimos os Goals:
+
+Exemplo:
+
+goal(State):-
+    final_positions(Finals),
+    all_boxes_in_final_positions(Finals,State).
+
+
+all_boxes_in_final_positions([], _State).
+
+
+all_boxes_in_final_positions([Box_pos|Rest],NewState):-
+    member(BoxPos,State),
+    all_boxes_in_final_positions(Rest,State).
+
+
+
+
+
+
+
+
+1.c)
+
+
+Aqui temos de ter conhecimento prévio do funcionamento de alguns algoritmos de pesquisa nomeadamente DFS, DFS com iterative deepening, BFS e A*.
+
+E depois é começarmos no estado especificado e escrevermos da seguinte forma os estados explorados pelos diferentes algoritmos:
+
+Exemplo:
+
+
+iteração 1:
+
+State 1.1 North (1)
+State 1.2 South (3)
+State 1.3 West (3)
+
+iteração 2 :
+
+State 1.1.1 South(4)
+State 1.2.1 West(5)
+.....
+
+
+até atingirmos o numero de estados objetivos, se possivel podemos representar com as coordendas de cada estado o que facilita a representação.
+
+
+
+Exercicio 2
+
+2.a)
+
+Neste exercicio é nos pedido que definamos os operadores necessários para conseguirmos tratar dos planos.
+
+Neste caso precisamos de realizar para cada predicado já existentes dois predicados:
+
+Can() e effects().
+
+O can representa-se da seguinte forma e usando o exericio 2.a) do exame 1920, temos o seguinte exemplo:
+
+pickup(Rob, Object, Position).
+putdown(Rob, Object, Position).
+stack(Rob, Base_Object, Object).
+unstack(Rob, Object, Base_Object).
+
+
+Antes de passarmos à modelação do problema precisamos de definir alguns factos importantes como:
+
+on(Object,BaseObject)
+robot(Rob)
+robotHas(Object)
+place(Position)
+
+
+Para conseguirmos modelar isto precisamos de criar para cada:
+
+can(pickup(Rob,Object,Position), [] ) sendo que no array vazio colocamos todas as preConditions necessária para conseguirmos realizar as ações, no caso:
+
+[clear(object), on(Object,Position), clear(Rob)].
+
+
+depois precisamo de adicionar os factos que precisam de ser verdade para o predicado:
+
+can(pickup(Rob,Object,Position), [clear(object), on(Object,Position), clear(Rob)]):-
+    robot(Rob)
+    place(Position)
+    object(Object)
+
+e depois definimos as funções add e delete 
+
+adds(pickup(Rob,Object,Position), [robotHas(Rob,object), clear(Position),]).
+
+Sendo que o array presente é os factos que vamos adicionar ao Plan depois de executada a ação definida
+
+
+deletes(pickup(rob,Object,Position), [clear(Rob), on(Object,Position),]).
+
+Aqui é ao contrário, vamos remover estes factos da lista.
+
+
+E fazemos isto para cada predicado necessário.
+O effects é a junção do add e delete e é representado da seguinte forma:
+
+effects(eat(Pac,Pos1,Po2), [on(Pac,Pos2), ~pellet_at(Pos2), clear(Pos1)], ~pacmanAt(Pac,Pos1))
+
+Ou seja, os factos que são para remover usamos ~ e os para adicionar mantemos normais.
+
+
+2.b) 
+
+
+O segundo exercicio costuma ser para mostrarmos um possivel plano a ser executado e para isto temos de fazer o seguinte:
+
+Definimos o estado inicial :
+
+state1([clear(rob1),clear(rob2), clear(3), clear(4), clear(5), clear(6), clear(b), clear(c),clear(f),clear(e),
+ on(a,1),on(b,a), on(c,2), on(f,7), on(d,8), on(e,d)]).
+
+
+
+Depois usamos novamente o estado inicial e passamos o plan() que contém o estado objetivo
+
+state1(Start), plan(Start, [on(a,b),on(b,c),on(d,e), on(e,f)], Plan, FinState).
+
+Depois definimos o plano para atingir o objetivo:
+
+Plan = [unstack(rob1,b,a), stack(rob1,c,b),pickup(rob1,a,1), stack(rob1,b,a),
+unstack(rob2, e, d), stack(rob2, f, e), pickup(rob2, d, 8), stack(rob2, e, d) ]
+
+FinState = [clear(rob1), on(a, b), clear(1), on(b, c), clear(a), clear(3), clear(4), on(c, 2)].
+
+
+Falando um pouco daquilo que é o algoritmo means ends sem e com goal regression.
+
+O Means ends normal, define o estado inicial e o conjunto de Goals que queremos atingir e portanto da lista, remove um e trabalha esse Goal até estar concluido.
+O problema desta abordagem é que pode gerar planos suboptimos, isto porque trabalha um goal de cada vez, ou seja, pode realizar ações que são desnecessárias e até ignorar soluções melhores.
+
+
+No means ends com goal regression, isto já não acontence porque a abordagem é diferente. 
+Pegamos nos goals e definimos todas as ações e precondições que são necessárias para atingir esse objetivo tendo sempre em conta todos os objetivos globais.
+
+
+Exercicio 2.c)
+
+
+Costuma ser bastante semelhante ao b) com algumas modificações e exceções.
+
+
+Exercicio 2.d)
+
+Costuma basear-se mais no POP, onde antes do POP assuiamos sempre que as ações estavam sempre ordenadas, contudo podem existir ações indepenendetes cuja a ordem de finalização não é relevante.
+
+
+No POP costumamos ter o seguinte (A,P,B) que essencialmente significa : " A Ação A produz a condição P necessária para conseguirmos realizar B"
+
+A grande ameaça no POP e naquilo que nos é pedido  nos exercicios é que existem algumas ameaças a este tipo de abordagens, isto porque uma determinada ação C pode desfazer a condição já atingida P que era necessária para realizar B. 
+Portanto nos exercicios temos de verificar se isto é ou não uma ameaça a este tipo de algoritmo.
+
+A maneira que o POP utiliza para combater esta possivel ameaça é utilizando a Promotion e Demotion.
+
+Promotion -> quando B<C e portanto realiza C somente depois de B
+Demotion  -> quando C<A e portanto realiza C antes de A.
+
+
+
+Exercicio 3.
+
+
+O Exercicio 3 implica sabermos bem os Genetic Alghortims, como funcionam, quais os tipos de CrossOvers e mutações que existem e saber como aplica-los.
+
+O GA funciona da seguinte forma:
+
+Começa por gerar uma População(Conjuntos de individuos(Cromossomas) e cada cromossoma tem genes.) -> 
+
+depois aplica uma função de fitness(avaliação) a cada individuo da população ->
+
+depois de avaliados são selecioandos os melhores, de acordo com a função de fitness usada ->
+
+são aplicados crossovers e mutações e repetimos o processo, até o numero de iterações definidas terminar ou até atingirmos o nosso objetivo.
+
+
+Existem diferentes tipos CrossOvers, entre eles estes são os mais importantes:
+
+Uniform CrossOver -> Aqui é aplicada uma mascara, por exemplo 10101 a dois cromossomas pais.
+
+Ex : 
+
+Mascara : 10101, sendo o 1 selecioarmos o gene do p1, e 0 selecionarmos o gene do p2
+
+Pais ->. p1 : 43125
+         p2 : 41523    
+
+Resulta diretamente em :  41125.
+
+
+One-Point Crossover -> aqui existe somente um unico ponto de corte, e portanto basta trocarmos somente o intervalo
+
+p1 : AA|ABBBAA   
+p2:  AB|ABAAAB 
+
+01: AA ABAAAB
+02: AB ABBBAA
+
+
+
+
+Two-Point Crossover -> selecionamos dois pontos de corte, ou seja um intervalo, depois o intervalo do p2 fica em p1 e o intervalo de p1 fica em p2:   
+
+p1 : AA|ABBB|AA   
+p2:  AB|ABAA|AB  
+
+
+01: AA|ABAA|AB      Tem o intervalo do P2    
+02: AB|ABBB|AA      Tem o intervalo do P1
+
+
+Partil Mapping Crossover -> realizamos um intervalo à semelhança do Two-Point:
+
+p1: 12|345|678
+p2: 54|672|183
+
+mapa :
+
+3 <-> 6
+4 <-> 7
+5 <-> 2
+
+
+Agora vamos percorrer o P1 com o intervalo do P2 e caso em P1 esteja um valor do intervalo, mapeamos para o valor correto:
+
+1- 1
+2 - 2, como 2 está em 672 mapeamos para o correspondente 2 -> 5 fica  15
+mantemos o intervalo do pai oposto - 15672
+3- 6 , está no intervalo mapeamos para o correspondente 6 -> 3 fica 156723
+4- , mapeamos para 4 fica 15672348
+
+fazemos o mesmo para o outro.
+
+
+
+
+Order Crossover -> estabelecemos um intervalo tal como no two-point
+
+Mantemos o intervalo estabelecido e percorremos o pai oposto
+
+p1: 43|12|5
+p2: 41|52|3
+
+01: 45123
+02: 43521  
+
+
+
+Cycle CrossOver ->
+
+
+(1, 2, 3, 4, 5, 6, 7, 0, 8)
+(2, 4, 5, 1, 0, 6, 8, 7, 3)
+
+
+p1[1] = 1 
+p2[x] = 1, x = 4 
+
+1 - 4 - 2  
+
+p1[4] = 4 
+p2[x] = 4 , x = 2 
+
+p1[2] = 4
+
+
+Ciclo 1 = [1,4,2]
+
+
+p1[3] = 3
+p2[x] = 3 , x = 9 
+
+p1[9] = 8 
+p2[x] = 8 , x = 7
+p1[7] = 7
+p2[x] = 7, x = 8
+
+p1[8] = 0
+p2[x] = 0, x = 5 
+
+p1[5] = 5 
+p2[x] = 5, x = 3 
+
+ciclo 2 = [3,9,7,8,5]
+
+ciclo 3 = [6]
+
+Construção do P1-
+
+Ciclo 1 vem do p1 {1,4,2} nestas posições escolhemos os genes do p1 
+
+01 = 1 2 _ 4 _ _ _ _ _  
+
+
+01 = 1 2 5 4 0 6 8 7 3                 
+
+
+
+02 = Ciclo 1 = P2
+     Ciclo 2 = P1
+     Ciclo 3 = P2 
+
+
+Posições 1,4,2 do P2 
+Posição 3,9,7,8,5 do P1
+posição 6 do P2 
+
+
+02 = 2 4 3 1 5 6 7 0 8  
+
+2.b) 
+
+Costuma ser aplicar diferentes tipos de CrossOvers sobre determinados casos.
+
+
+2.c) 
+
+Resume sempre à definição de uma função de fitness adequada para o problema, em caso de percorrer distancias, TSP por exemplo, podemos atribuir a cada aresta um valor/weight e portanto quanto menor o weight total somado, mais alto deve ser o resutlado da avaliação desse fitness score. 
+
+
+
+
+2.d) 
+
+Incide praticamente sempre de todos os paraemtros necessários para conseguirmos aplicar o algoritmo Hill-Climbing, sendo que os parametros são praticamente sempre os mesmos:
+
+
+- Função responsavél por gerar o estado inicial.
+- GetNeighbors, função responsavél por gerar todos os vizinhos/candidatos.
+- definir uma função de avaliação/fitness
+- GetBestNeighbor, função responsavél por selecionar o melhor candidato/vizinho dentro dos gerados e avaliados. 
+
+
+
+
+
