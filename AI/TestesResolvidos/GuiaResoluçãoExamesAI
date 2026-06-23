@@ -358,13 +358,35 @@ fazemos o mesmo para o outro.
 
 Order Crossover -> estabelecemos um intervalo tal como no two-point
 
-Mantemos o intervalo estabelecido e percorremos o pai oposto
+Mantemos o intervalo do respetivo pai, e percorremos o pai oposto recolhendo todos os valors que aparecem depois do corte 
 
-p1: 43|12|5
-p2: 41|52|3
+p1: (9, 3,| 1, 4, 7,| 2, 6, 8, 5)
 
-01: 45123
-02: 43521  
+p2: (6, 1,| 5, 2, 9,| 3, 7, 4, 8)
+
+
+01 :   | 1,4,7| 
+
+3 ,7, 4 , 8 , 6 , 1,  5 , 2 , 9
+
+Agora removemos os que já constam no intervalo do pai.
+
+3 , 8 , 6 , 5 , 2 , 9
+
+Agora preenchemos de forma circular depois do corte 
+
+01 :   2, 9 , 1 , 4 ,7 , 3 , 8 ,6 ,5 
+
+E agora fazemos o mesmo para o outro
+
+
+2, 9  | 1 , 4 ,7 | 3 , 8 , 6 , 5
+
+
+02 :  6 ,8 ,3 ,1 ,4 ,7
+
+  4 , 7 | 5 2 9 | 6 , 8 ,3 1   
+
 
 
 
